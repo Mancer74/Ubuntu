@@ -20,7 +20,7 @@
 #define NUM_OF_TAGLINES		1  // number of taglines received
 
 // Global declarations
-int current_filled[RAID_DISKS];					// records how much data is on each disk
+uint32_t current_filled[RAID_DISKS];					// records how much data is on each disk
 int i;											// loop variable
 int k;											// loop variable
 
@@ -28,7 +28,7 @@ int k;											// loop variable
 typedef struct
 {
 	uint16_t tag_name;							// the name of the tagline
-	int addresses[MAX_TAGLINE_BLOCK_NUMBER][2]; // the memory structure
+	uint32_t addresses[MAX_TAGLINE_BLOCK_NUMBER][2]; // the memory structure
 } TAGLINE;
 
 TAGLINE *tags[NUM_OF_TAGLINES];			// an array of pointers to TAGLINE structures
@@ -93,7 +93,7 @@ int tagline_driver_init(uint32_t maxlines) {
 	{	
 		TAGLINE new_tag;
 		tags[i] = &new_tag;
-		tags[i]->tag_name = 0; 						// default name is 0
+		tags[i]->tag_name = -1; 						// default name is -1
 		
 		//set 
 		for(k = 0; k < MAX_TAGLINE_BLOCK_NUMBER; k++)
@@ -122,7 +122,7 @@ int tagline_read(TagLineNumber tag, TagLineBlockNumber bnum, uint8_t blks, char 
 	// find the tag index in the memory structure
 	int tag_index = -1;
 	int curr_tag_index = 0;
-	while (tags[curr_tag_index]->tag_name != 0)
+	while (tags[curr_tag_index]->tag_name != -1)
 	{
 		if (tags[curr_tag_index]->tag_name == tag)
 			tag_index = curr_tag_index;
@@ -176,7 +176,7 @@ int tagline_write(TagLineNumber tag, TagLineBlockNumber bnum, uint8_t blks, char
 	// figure out if the tag/bnum is old or new
 	int tag_index = -1;
 	int next_tag_index = 0;
-	while (tags[next_tag_index]->tag_name != 0)
+	while (tags[next_tag_index]->tag_name != -1)
 	{
 		if (tags[next_tag_index]->tag_name == tag)
 			tag_index = next_tag_index;	
@@ -209,8 +209,8 @@ int tagline_write(TagLineNumber tag, TagLineBlockNumber bnum, uint8_t blks, char
 			// if there is an entry for this block, overwrite
 			if (tags[tag_index]->addresses[0][bnum + i] != -1)
 			{
-				int this_disk = tags[tag_index]->addresses[0][bnum + i];
-				int this_block = tags[tag_index]->addresses[1][bnum + i];
+				uint8_t this_disk = tags[tag_index]->addresses[0][bnum + i];
+				uint32_t this_block = tags[tag_index]->addresses[1][bnum + i];
 				RAIDOpCode write = make_raid_request(RAID_WRITE, 1, this_disk, this_block);
 				RAIDOpCode write_response = raid_bus_request(write, buf);
 			}
