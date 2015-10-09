@@ -17,15 +17,15 @@
 #include "tagline_driver.h"
 
 // Defines
-#define NUM_OF_TAGLINES		1  // number of taglines recieved
+#define NUM_OF_TAGLINES		1  // number of taglines received
 
 uint32_t memory[RAID_DISKS][RAID_DISKBLOCKS];
-int Current_Filled[RAID_DISKS];
+int current_filled[RAID_DISKS];
 int i;
 
 typedef struct
 {
-	uint16_t tag_name;	//the name of the tagline
+	uint16_t tag_name = 0;	//the name of the tagline, default 0
 	int addresses[MAX_TAGLINE_BLOCK_NUMBER][2];
 } TAGLINE;
 
@@ -38,10 +38,6 @@ for(i = 0; i <= NUM_OF_TAGLINES; i++)
 	tags[i] = &new_tag;
 }
 
-for(i = 0; i <= RAID_DISKS; i++)
-{
-	
-}
 
 //
 // Functions
@@ -63,7 +59,7 @@ RAIDOpCode make_raid_request(uint8_t request_type, uint8_t num_of_blks, uint8_t 
 	return(result);
 }
 
-int extract_raid_response(RAIDOpCode resp, *uint8_t request_type, *uint8_t num_of_blks, *uint8_t disk_num, *uint32_t block_ID)
+int extract_raid_response(RAIDOpCode resp, uint8_t *request_type, uint8_t *num_of_blks, uint8_t *disk_num, uint32_t *block_ID)
 {
 	block_ID = resp & 0xffffffff;
 	disk_num = resp & 0xff0000000000;
@@ -91,7 +87,12 @@ int tagline_driver_init(uint32_t maxlines) {
 		RAIDOpCode format = make_raid_request(RAID_FORMAT, 0, i, 0);
 		RAIDOpCode format_response = raid_bus_request(format, NULL);	
 	}
-		
+	
+	//record the disks as empty
+	for(i = 0; i <= RAID_DISKS; i++)
+	{
+		current_filled[i] = 0;
+	}
 	
 	
 	// Return successfully
@@ -115,7 +116,7 @@ int tagline_read(TagLineNumber tag, TagLineBlockNumber bnum, uint8_t blks, char 
 	// find the tag index in the memory structure
 	int tag_index = -1;
 	int curr_tag_index = 0;
-	while(tags[curr_tag_index]->tag_name != NULL)
+	while(tags[curr_tag_index]->tag_name != 0)
 	{
 		if (tags[curr_tag_index]->tag_name == tag)
 			tag_index = curr_tag_index;
@@ -157,12 +158,12 @@ int tagline_write(TagLineNumber tag, TagLineBlockNumber bnum, uint8_t blks, char
 	// figure out which disk has least written to it and use it
 	for (i = 0; i < RAID_DISKS; i++)
         {
-		if (Current_Filled[i] == 0)
+		if (current_filled[i] == 0)
 	        {
 			disk_to_write = i;
 			i = RAID_DISKS;
 		}
-		else if (Current_Filled[i] < current_Filled[disk_to_write])
+		else if (current_filled[i] < current_filled[disk_to_write])
 			disk_to_write = i;
 	}
 
@@ -178,17 +179,17 @@ int tagline_write(TagLineNumber tag, TagLineBlockNumber bnum, uint8_t blks, char
 	// if the tagline is new make a request to the least filled disk
 	if (tag_index == -1)
 	{
-		RAIDOpCode write = make_raid_request(RAID_WRITE, blks, disk_to_write, current_Filled[disk_to_write]);
+		RAIDOpCode write = make_raid_request(RAID_WRITE, blks, disk_to_write, current_filled[disk_to_write]);
 		RAIDOpCode write_result = raid_bus_request(write, buf);
 
 		// this tag is new, so record the name in the next null index of tags	
-		tags[next_tag_index]->name = tag;
+		tags[next_tag_index]->tag_name = tag;
 		// log the locations
 		int k;
 		for (k = 0; i < blks; i++)
 		{
 			tags[next_tag_index]->addresses[0][bnum + k] = disk_to_write;
-			tags[next_tag_index]->addresses[1][bnum + k] = (current_Filled[disk_to_write] + i);
+			tags[next_tag_index]->addresses[1][bnum + k] = (current_filled[disk_to_write] + i);
 		}
 		// increment the array for counting memory
 		current_Filled[disk_to_write] += blks;
@@ -203,8 +204,8 @@ int tagline_write(TagLineNumber tag, TagLineBlockNumber bnum, uint8_t blks, char
 			// if there is an entry for this block, overwrite
 			if (tags[tag_index]->addresses[0][bnum + i] != NULL)
 			{
-				int this_disk = tags[tag_index]->addresses[0][bnum + i]
-				int this_block = tags[tag_index]->addresses[1][bnum + i]
+				int this_disk = tags[tag_index]->addresses[0][bnum + i];
+				int this_block = tags[tag_index]->addresses[1][bnum + i];
 				RAIDOpCode write = make_raid_request(RAID_WRITE, 1, this_disk, this_block);
 				RAIDOpCode write_result = raid_bus_request(write, buf);
 			}
@@ -212,10 +213,10 @@ int tagline_write(TagLineNumber tag, TagLineBlockNumber bnum, uint8_t blks, char
 			// it should be new blocks from now on
 			else
 			{
-				RAIDOpCode write = make_raid_request(RAID_WRITE, 1, disk_to_write, current_Filled[disk_to_write]);
+				RAIDOpCode write = make_raid_request(RAID_WRITE, 1, disk_to_write, current_filled[disk_to_write]);
 				RAIDOpCode write_result = raid_bus_request(write, buf);
 				tags[tag_index]->addresses[0][bnum + i] = disk_to_write;
-				tags[tag_index]->addresses[1][bnum + i] = (current_Filled[disk_to_write] + counter);
+				tags[tag_index]->addresses[1][bnum + i] = (current_filled[disk_to_write] + counter);
 				counter++;
 			}
 		}
