@@ -21,6 +21,8 @@
 
 uint32_t memory[RAID_DISKS][RAID_DISKBLOCKS];
 int Current_Filled[RAID_DISKS];
+int i;
+
 typedef struct
 {
 	uint16_t tag_name;	//the name of the tagline
@@ -30,10 +32,15 @@ typedef struct
 
 TAGLINE *tags[(NUM_OF_TAGLINES + 1)];
 
-for(int i = 0; i <= NUM_OF_TAGLINES; i++)
+for(i = 0; i <= NUM_OF_TAGLINES; i++)
 {	
 	TAGLINE new_tag;
 	tags[i] = &new_tag;
+}
+
+for(i = 0; i <= RAID_DISKS; i++)
+{
+	
 }
 
 //
@@ -79,7 +86,7 @@ int tagline_driver_init(uint32_t maxlines) {
 	RAIDOpCode init = make_raid_request(RAID_INIT, 1, RAID_DISKS, 0);
 	RAIDOpCode init_response = raid_bus_request(init, NULL);
 	
-	for(int i = 0; i < RAID_DISKS; i++)
+	for(i = 0; i < RAID_DISKS; i++)
 	{
 		RAIDOpCode format = make_raid_request(RAID_FORMAT, 0, i, 0);
 		RAIDOpCode format_response = raid_bus_request(format, NULL);	
@@ -116,7 +123,7 @@ int tagline_read(TagLineNumber tag, TagLineBlockNumber bnum, uint8_t blks, char 
 	}
 	
 	// read the blocks one at a time
-	for (int i = 0; i < blks; i++)
+	for (i = 0; i < blks; i++)
 	{
 		// get the right memory location from the memory structure
 		uint8_t disk_to_write = tags[tag_index]->addresses[0][bnum + i];
@@ -148,7 +155,7 @@ int tagline_write(TagLineNumber tag, TagLineBlockNumber bnum, uint8_t blks, char
 	uint8_t disk_to_write = 0;
 
 	// figure out which disk has least written to it and use it
-	for (int i = 0; i < RAID_DISKS; i++)
+	for (i = 0; i < RAID_DISKS; i++)
         {
 		if (Current_Filled[i] == 0)
 	        {
@@ -177,10 +184,11 @@ int tagline_write(TagLineNumber tag, TagLineBlockNumber bnum, uint8_t blks, char
 		// this tag is new, so record the name in the next null index of tags	
 		tags[next_tag_index]->name = tag;
 		// log the locations
-		for (int i = 0; i < blks; i++)
+		int k;
+		for (k = 0; i < blks; i++)
 		{
-			tags[next_tag_index]->addresses[0][bnum + i] = disk_to_write;
-			tags[next_tag_index]->addresses[1][bnum + i] = (current_Filled[disk_to_write] + i);
+			tags[next_tag_index]->addresses[0][bnum + k] = disk_to_write;
+			tags[next_tag_index]->addresses[1][bnum + k] = (current_Filled[disk_to_write] + i);
 		}
 		// increment the array for counting memory
 		current_Filled[disk_to_write] += blks;
@@ -190,7 +198,7 @@ int tagline_write(TagLineNumber tag, TagLineBlockNumber bnum, uint8_t blks, char
 	else
 	{	
 		int counter = 0;
-		for (int i = 0; i < blks; i++)
+		for (i = 0; i < blks; i++)
 		{
 			// if there is an entry for this block, overwrite
 			if (tags[tag_index]->addresses[0][bnum + i] != NULL)
