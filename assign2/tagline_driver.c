@@ -83,7 +83,7 @@ int tagline_driver_init(uint32_t maxlines) {
 	}
 	
 	//record the disks as empty
-	for (i = 0; i <= RAID_DISKS; i++)
+	for (i = 0; i < RAID_DISKS; i++)
 	{
 		current_filled[i] = 0;
 	}
