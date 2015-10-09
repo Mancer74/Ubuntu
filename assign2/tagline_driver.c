@@ -89,7 +89,7 @@ int tagline_driver_init(uint32_t maxlines) {
 	}
 	
 	// create new TAGLINES for each pointer in the array
-	for (i = 0; i < NUM_OF_TAGLINES; i++)
+	for (i = 0; i < maxlines; i++)
 	{	
 		TAGLINE new_tag;
 		tags[i] = &new_tag;
@@ -163,9 +163,9 @@ int tagline_write(TagLineNumber tag, TagLineBlockNumber bnum, uint8_t blks, char
 
 	// figure out which disk has least written to it and use it
 	for (i = 0; i < RAID_DISKS; i++)
-        {
+    {
 		if (current_filled[i] == 0)
-	        {
+	    {
 			disk_to_write = i;
 			i = RAID_DISKS;
 		}
@@ -176,6 +176,7 @@ int tagline_write(TagLineNumber tag, TagLineBlockNumber bnum, uint8_t blks, char
 	// figure out if the tag/bnum is old or new
 	int tag_index = -1;
 	int next_tag_index = 0;
+	logMessage(LOG_INFO_LEVEL, "tags[0]->tag_name = %d", tags[0]->tag_name);
 	while (tags[next_tag_index]->tag_name != -1)
 	{
 		if (tags[next_tag_index]->tag_name == tag)
