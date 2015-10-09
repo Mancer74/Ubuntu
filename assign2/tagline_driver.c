@@ -32,17 +32,6 @@ typedef struct
 } TAGLINE;
 
 TAGLINE *tags[NUM_OF_TAGLINES];			// an array of pointers to TAGLINE structures
-// create new TAGLINES for each pointer in the array
-for (i = 0; i < NUM_OF_TAGLINES; i++)
-{	
-	TAGLINE new_tag;
-	tags[i] = &new_tag;
-	tags[i]->tag_name = 0; 						// default name is 0
-	
-	//set 
-	for(k = 0; k < MAX_TAGLINE_BLOCK_NUMBER; k++)
-		tags[i]->addresses[k][0] = -1;			// initialize the disk used to -1
-}
 
 //
 // Functions
@@ -66,10 +55,10 @@ RAIDOpCode make_raid_request(uint8_t request_type, uint8_t num_of_blks, uint8_t 
 
 int extract_raid_response(RAIDOpCode resp, uint8_t *request_type, uint8_t *num_of_blks, uint8_t *disk_num, uint32_t *block_ID)
 {
-	block_ID = (resp & 0xffffffff);
-	disk_num = ((resp & 0xff0000000000) >> 40);
-	num_of_blks = ((resp & 0xff000000000000) >> 48);
-	request_type  = ((resp & 0xff00000000000000) >> 54);
+	*block_ID = (resp & 0xffffffff);
+	*disk_num = ((resp & 0xff0000000000) >> 40);
+	*num_of_blks = ((resp & 0xff000000000000) >> 48);
+	*request_type  = ((resp & 0xff00000000000000) >> 54);
 	int success_bit = ((resp & 0x100000000) >> 32);
 	return success_bit;
 }
@@ -97,6 +86,18 @@ int tagline_driver_init(uint32_t maxlines) {
 	for (i = 0; i <= RAID_DISKS; i++)
 	{
 		current_filled[i] = 0;
+	}
+	
+	// create new TAGLINES for each pointer in the array
+	for (i = 0; i < NUM_OF_TAGLINES; i++)
+	{	
+		TAGLINE new_tag;
+		tags[i] = &new_tag;
+		tags[i]->tag_name = 0; 						// default name is 0
+		
+		//set 
+		for(k = 0; k < MAX_TAGLINE_BLOCK_NUMBER; k++)
+			tags[i]->addresses[k][0] = -1;			// initialize the disk used to -1
 	}
 	
 	
