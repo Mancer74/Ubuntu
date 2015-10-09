@@ -19,23 +19,27 @@
 // Defines
 #define NUM_OF_TAGLINES		1  // number of taglines received
 
+// Global declarations
 uint32_t memory[RAID_DISKS][RAID_DISKBLOCKS];
 int current_filled[RAID_DISKS];
 int i;
 
+// define a TAGLINE structure
 typedef struct
 {
-	uint16_t tag_name = 0;	//the name of the tagline, default 0
-	int addresses[MAX_TAGLINE_BLOCK_NUMBER][2];
+	uint16_t tag_name;							// the name of the tagline
+	int addresses[MAX_TAGLINE_BLOCK_NUMBER][2]; // the memory structure
 } TAGLINE;
 
-
+// an array of pointers to TAGLINE structures
 TAGLINE *tags[(NUM_OF_TAGLINES + 1)];
 
+// create new TAGLINES for each pointer in the array
 for(i = 0; i <= NUM_OF_TAGLINES; i++)
 {	
 	TAGLINE new_tag;
 	tags[i] = &new_tag;
+	tags[i]->tag_name = 0; //default name is 0
 }
 
 
