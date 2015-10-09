@@ -27,8 +27,8 @@ int k;											// loop variable
 // define a TAGLINE structure
 typedef struct
 {
-	uint16_t tag_name;							// the name of the tagline
-	uint32_t addresses[MAX_TAGLINE_BLOCK_NUMBER][2]; // the memory structure
+	int32_t tag_name;							// the name of the tagline
+	int64_t addresses[MAX_TAGLINE_BLOCK_NUMBER][2]; // the memory structure
 } TAGLINE;
 
 TAGLINE *tags[NUM_OF_TAGLINES];			// an array of pointers to TAGLINE structures
@@ -93,11 +93,11 @@ int tagline_driver_init(uint32_t maxlines) {
 	{	
 		TAGLINE new_tag;
 		tags[i] = &new_tag;
-		tags[i]->tag_name = -1; 						// default name is -1
+		tags[i]->tag_name = -1; 						// default name is 65535
 		
 		//set 
 		for(k = 0; k < MAX_TAGLINE_BLOCK_NUMBER; k++)
-			tags[i]->addresses[k][0] = -1;			// initialize the disk used to -1
+			tags[i]->addresses[k][0] = -1;			// initialize the disk used to 65535
 		logMessage(LOG_INFO_LEVEL, "tags[0]->tag_name = %d", tags[0]->tag_name);
 	}
 	
