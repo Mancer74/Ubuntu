@@ -31,9 +31,9 @@ typedef struct
 	int addresses[MAX_TAGLINE_BLOCK_NUMBER][2]; // the memory structure
 } TAGLINE;
 
-TAGLINE *tags[(NUM_OF_TAGLINES + 1)];			// an array of pointers to TAGLINE structures
+TAGLINE *tags[NUM_OF_TAGLINES];			// an array of pointers to TAGLINE structures
 // create new TAGLINES for each pointer in the array
-for (i = 0; i <= NUM_OF_TAGLINES; i++)
+for (i = 0; i < NUM_OF_TAGLINES; i++)
 {	
 	TAGLINE new_tag;
 	tags[i] = &new_tag;
