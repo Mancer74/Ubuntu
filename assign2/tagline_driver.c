@@ -98,6 +98,7 @@ int tagline_driver_init(uint32_t maxlines) {
 		//set 
 		for(k = 0; k < MAX_TAGLINE_BLOCK_NUMBER; k++)
 			tags[i]->addresses[k][0] = -1;			// initialize the disk used to -1
+		logMessage(LOG_INFO_LEVEL, "tags[0]->tag_name = %d", tags[0]->tag_name);
 	}
 	
 	
@@ -176,7 +177,6 @@ int tagline_write(TagLineNumber tag, TagLineBlockNumber bnum, uint8_t blks, char
 	// figure out if the tag/bnum is old or new
 	int tag_index = -1;
 	int next_tag_index = 0;
-	logMessage(LOG_INFO_LEVEL, "tags[0]->tag_name = %d", tags[0]->tag_name);
 	while (tags[next_tag_index]->tag_name != -1)
 	{
 		if (tags[next_tag_index]->tag_name == tag)
